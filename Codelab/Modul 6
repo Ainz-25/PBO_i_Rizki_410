@@ -1,1 +1,95 @@
 
+package com.example.demo; // Package dari program ini
+
+import javafx.application.Application; // Mengimpor class Application (JavaFX)
+import javafx.scene.Scene; // Mengimpor class Scene (JavaFX)
+import javafx.scene.control.*; // Mengimpor semua komponen UI JavaFX
+import javafx.scene.layout.*; // Mengimpor layout JavaFX (HBox, VBox, dll.)
+import javafx.stage.Stage; // Mengimpor stage utama (window aplikasi)
+import java.util.Random; // Mengimpor class Random untuk angka acak
+
+public class TebakAngkaApp extends Application { // Kelas utama, turunan Application
+
+    private int angkaRandom; // Menyimpan angka acak yang harus ditebak
+    private int jumlahPercobaan; // Menyimpan jumlah percobaan
+
+    public static void main(String[] args) {
+        launch(args); // Memulai aplikasi JavaFX
+    }
+
+    @Override
+    public void start(Stage primaryStage) { // Method utama JavaFX, dipanggil saat aplikasi dimulai
+        angkaRandom = generateAngka(); // Memanggil fungsi untuk mendapatkan angka acak (1-100)
+        jumlahPercobaan = 0; // Set jumlah percobaan awal ke 0
+
+        // Membuat label judul, feedback, dan jumlah percobaan
+        Label labelJudul = new Label("Game Tebak Angka 1-100");
+        Label labelFeedback = new Label("Silakan masukkan tebakan Anda:");
+        Label labelPercobaan = new Label("Jumlah Percobaan: 0");
+
+        // Membuat TextField untuk input tebakan
+        TextField inputTebakan = new TextField();
+        inputTebakan.setPromptText("Tebakan Anda"); // Placeholder saat kosong
+
+        // Membuat tombol untuk menebak
+        Button tombolTebak = new Button("Coba Tebak!");
+
+        // Label untuk tulisan "Tebakan"
+        Label labelTebakan = new Label("Tebakan");
+        labelTebakan.setTranslateX(75); // Menggeser label 75 pixel ke kanan
+
+        // HBox untuk meletakkan label dan input secara horizontal dengan jarak 85 pixel
+        HBox hboxInput = new HBox(85, labelTebakan, inputTebakan);
+
+        // VBox untuk menyusun semua komponen secara vertikal
+        VBox vbox = new VBox(10, labelJudul, hboxInput, tombolTebak, labelFeedback, labelPercobaan);
+        vbox.setStyle("-fx-padding: 20; -fx-alignment: center;"); // Style VBox (padding 20, center alignment)
+
+        // Event handler untuk tombol "Coba Tebak!"
+        tombolTebak.setOnAction(e -> {
+            String input = inputTebakan.getText(); // Ambil teks dari TextField
+            try {
+                int tebakan = Integer.parseInt(input); // Konversi input ke angka
+                jumlahPercobaan++; // Tambah jumlah percobaan
+                labelPercobaan.setText("Jumlah Percobaan: " + jumlahPercobaan); // Update label percobaan
+
+                if (tebakan > angkaRandom) { // Jika tebakan terlalu besar
+                    labelFeedback.setText("Terlalu besar!");
+                } else if (tebakan < angkaRandom) { // Jika tebakan terlalu kecil
+                    labelFeedback.setText("Terlalu kecil!");
+                } else { // Jika tebakan benar
+                    labelFeedback.setText("Tebakan benar! Angkanya: " + angkaRandom);
+                    tombolTebak.setText("Main Lagi"); // Ubah teks tombol jadi "Main Lagi"
+
+                    // Ubah aksi tombol jika ditekan lagi (reset game)
+                    tombolTebak.setOnAction(ev -> {
+                        angkaRandom = generateAngka(); // Buat angka baru
+                        jumlahPercobaan = 0; // Reset jumlah percobaan
+                        labelPercobaan.setText("Jumlah Percobaan: 0"); // Reset label percobaan
+                        labelFeedback.setText("Silakan masukkan tebakan Anda:"); // Reset feedback
+                        tombolTebak.setText("Coba Tebak!"); // Ubah kembali teks tombol
+                        inputTebakan.clear(); // Bersihkan input
+                        tombolTebak.setOnAction(this::handleTebak); // Set ulang event handler default
+                    });
+                }
+            } catch (NumberFormatException ex) { // Jika input bukan angka
+                labelFeedback.setText("Masukkan angka yang valid!");
+            }
+            inputTebakan.clear(); // Bersihkan input setelah ditekan
+        });
+
+        // Membuat scene dan menampilkan aplikasi
+        Scene scene = new Scene(vbox, 450, 350); // Buat scene dengan ukuran 450x350 pixel
+        primaryStage.setTitle("Tebak Angka"); // Set judul window
+        primaryStage.setScene(scene); // Set scene ke stage
+        primaryStage.show(); // Tampilkan window
+    }
+
+    private int generateAngka() { // Method untuk menghasilkan angka acak 1-100
+        return new Random().nextInt(100) + 1;
+    }
+
+    private void handleTebak(javafx.event.ActionEvent e) { // Method untuk reset game (dipanggil saat Main Lagi)
+        start((Stage) ((Button) e.getSource()).getScene().getWindow()); // Panggil ulang start() di stage yang sama
+    }
+}
